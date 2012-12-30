@@ -163,7 +163,7 @@ Structure = (function(){
         if(typeof target === "undefined" || target == null){
             this.results.push({
                 ok: false,
-                message: "Test target can't be " + target
+                message: path + " can't be " + target
             });
             return resultEvaluator(this.results);
         }
@@ -216,7 +216,7 @@ Structure = (function(){
             // Nested structure:
             if(expected instanceof Structure){
                 // Recursive evaluation:
-                expected.test(propertyValue);
+                expected.test(propertyValue, path + '.' + property);
                 var nestedResults = expected.results;
                 // Append nested results to results of this Structure:
                 for(var i = 0; i < nestedResults.length; ++i){
