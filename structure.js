@@ -8,6 +8,12 @@ Structure = (function(){
            an object was expected, adding stricter semantics.
            Change this to true to respect javascript's 'typeof' values. */
         this.arraysAreObjects = false;
+
+        /* This is true to make tests fail when regular expresions are
+           tested with objects that are not strings (nulls, undefineds, etc).
+           For example, prevents /\w+/.test(null) of returning true.
+           Change this to false to respect javascript's RegExp behavior. */
+        this.regExpRequiresString = true;
     };
 
     // Returns false when at least one result is negative, true otherwise:
@@ -26,6 +32,7 @@ Structure = (function(){
         var expected = options.expected;
         var path = options.path;
         var results = options.results;
+        var arraysAreObjects = options.arraysAreObjects;
 
         // Object is not defined:
         if(typeof target === 'undefined'){
@@ -40,7 +47,7 @@ Structure = (function(){
         if(typeof target === expected){
             
             // Special case, check for custom semantics for arrays:
-            if(!this.arraysAreObjects && expected === 'object'){
+            if(!arraysAreObjects && expected === 'object'){
                 
                 // It is an Array, but semantics reject it as an object:
                 if(target instanceof Array){
@@ -74,7 +81,7 @@ Structure = (function(){
         }
     };
 
-    // Validates when target is an array:
+    // Validates when the target is an array:
     var arrayValidator = function(options){
         var target = options.target;
         var path = options.path;
@@ -90,7 +97,7 @@ Structure = (function(){
         }
 
         // Check if Array is in the prototype chain:
-        if(propertyValue instanceof Array){
+        if(target instanceof Array){
             results.push({
                 ok: true,
                 message: path + ' is an Array'
@@ -100,6 +107,47 @@ Structure = (function(){
                 ok: false,
                 message: 'Type of ' + path + ' is ' + (typeof target) +
                     ', expecting an Array'
+            });
+        }
+    };
+
+    // Validates when the target matches a given regular expression:
+    var regExpValidator = function(options){
+        var target = options.target;
+        var regExp = options.regExp;
+        var path = options.path;
+        var results = options.results;
+        var regExpRequiresString = options.regExpRequiresString;
+
+        // If RegExp requires strings, fail if target isn't one:
+        if(regExpRequiresString && typeof target !== 'string'){
+            if(typeof target === 'undefined'){
+                results.push({
+                    ok: false,
+                    message: 'Missing ' + path + ', expecting a string ' +
+                        'that matches ' + regExp.toString()
+                });
+            }else{
+                results.push({
+                    ok: false,
+                    message: 'Type of ' + path + ' is ' + (typeof target) +
+                        ', expecting a string that matches ' +
+                        regExp.toString()
+                });
+            }
+            return;
+        }
+
+        // Check if target matches:
+        if(regExp.test(target)){
+            results.push({
+                ok: true,
+                message: path + ' matches ' + regExp.toString()
+            });
+        }else{
+            results.push({
+                ok: false,
+                message: path + " doesn't match " + regExp.toString()
             });
         }
     };
@@ -138,7 +186,8 @@ Structure = (function(){
                     target: propertyValue,
                     expected: expected,
                     path: path + '.' + property,
-                    results: this.results
+                    results: this.results,
+                    arraysAreObjects: this.arraysAreObjects
                 });
             }
 
@@ -154,19 +203,14 @@ Structure = (function(){
 
             // String regular expresion match:
             if(expected instanceof RegExp){
-                if(expected.test(propertyValue)){
-                    this.results.push({
-                        ok: true,
-                        message: 'Property ' + property + ' matches ' +
-                            expected.toString()
-                    });
-                }else{
-                    this.results.push({
-                        ok: true,
-                        message: 'Property ' + property + " doesn't match " +
-                            expected.toString()
-                    });
-                }
+
+                regExpValidator({
+                    target: propertyValue,
+                    regExp: expected,
+                    path: path + '.' + property,
+                    results: this.results,
+                    regExpRequiresString: this.regExpRequiresString
+                });
             }
 
             // Nested structure:
