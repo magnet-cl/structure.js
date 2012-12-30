@@ -3,12 +3,17 @@ Structure = (function(){
     var Structure = function(pattern){
         this.pattern = pattern || {};
         this.results = [];
+
+        /* This is false to make tests fail when an array is found and
+           a object was expected, adding stricter semantics.
+           Change this to true to respect javascript's 'typeof' values. */
+        this.arraysAreObjects = false;
     };
 
     // Returns false when at least one result is negative, true otherwise:
-    var resultEvaluator = function(result){
-        for(var i = 0; i < result.length; ++i){
-            if(!result[i].ok){
+    var resultEvaluator = function(results){
+        for(var i = 0; i < results.length; ++i){
+            if(!results[i].ok){
                 return false;
             }
         }
@@ -36,18 +41,42 @@ Structure = (function(){
         // Test object's structure:
         for(var property in this.pattern){
 
-            // Expected type for this property:
+            // Expected type and current value for this property:
             var expected = this.pattern[property];
+            var propertyValue = target[property];
 
             // Basic type testing:
             if(basicTypes.indexOf(expected) != -1){
-                var propertyValue = target[property];
+
                 // Type matches:
                 if(typeof propertyValue === expected){
-                    this.results.push({
-                        ok: true,
-                        message: 'Type of ' + property + ' is ' + expected
-                    });
+                    
+                    // Special case, check for custom semantics for arrays:
+                    if(!this.arraysAreObjects && expected === 'object'){
+                        
+                        // Is an Array, but semantics reject it as an object:
+                        if(propertyValue instanceof Array){
+                            this.results.push({
+                                ok: false,
+                                message: 'Property ' + property + ' is an ' +
+                                    'Array, expecting object (Structure.' + 
+                                    'arraysAreObjects is set to false)'
+                            });
+                        // Is a not-an-array-object:
+                        }else{
+                            this.results.push({
+                                ok: true,
+                                message: 'Type of ' + property + ' is object'
+                            });
+                        }
+                    // Basic type match, no special case:
+                    }else{
+                        this.results.push({
+                            ok: true,
+                            message: 'Type of ' + property + ' is ' + expected
+                        });
+                    }
+
                 // Type doesn't match:
                 }else{
                     // Because property is not defined:
@@ -68,9 +97,24 @@ Structure = (function(){
                 }
             }
 
+            // Explicit array requirement:
+            if(expected == 'array'){
+
+                if(propertyValue instanceof Array){
+                    this.results.push({
+                        ok: true,
+                        message: 'Property ' + property + ' is an Array'
+                    });
+                }else{
+                    this.results.push({
+                        ok: false,
+                        message: 'Type of ' + property + ' is ' + (typeof
+                            propertyValue) + ', expecting an Array'
+                    });
+                }
+            }
+
             // To do:
-            
-            // ...Array vs Object.
             
             // ...Array inner types.
 
