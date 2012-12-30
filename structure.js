@@ -185,7 +185,7 @@ Structure = (function(){
             if(typeof target === 'undefined'){
                 results.push({
                     ok: false,
-                    message: 'Missing ' + path + ', expecting an Array'
+                    message: 'Missing ' + path + ', expecting a number'
                 });
                 return;
             }
@@ -241,7 +241,11 @@ Structure = (function(){
     // Represent an array with specific contents in a schema:
     Structure.ArrayOf = function(){
         var customStructure = new CustomStructure();
-        var validTypes = arguments;
+        var validTypes = [];
+        // Copy arguments into an Array (because arguments it's not an Array!):
+        for(var a = 0; a < arguments.length; ++a){
+            validTypes.push(arguments[a]);
+        }
 
         // Validator ussed to test contents of an array:
         customStructure.validator = function(options){
