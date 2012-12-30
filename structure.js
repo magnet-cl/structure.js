@@ -212,7 +212,7 @@ Structure = (function(){
                 }else{
                     results.push({
                         ok: false,
-                        message: path + " is not equal or larger than " +
+                        message: path + ' is not equal or larger than ' +
                         bounds[0] + " (it's " + target + ')'
                     });
                 }
@@ -229,14 +229,70 @@ Structure = (function(){
                 }else{
                     results.push({
                         ok: false,
-                        message: path + " is not equal or less than " +
+                        message: path + ' is not equal or less than ' +
                         bounds[1] + " (it's " + target + ')'
                     });
                 }
             }
         };
         return customStructure;
-    }
+    };
+
+    // Represent an array with specific contents in a schema:
+    Structure.ArrayOf = function(){
+        var customStructure = new CustomStructure();
+        var validTypes = arguments;
+
+        // Validator ussed to test contents of an array:
+        customStructure.validator = function(options){
+            var target = options.target;
+            var path = options.path;
+            var results = options.results;
+            var tempResults = [];
+            var i = 0;
+            var j = 0;
+            var r = 0;
+
+            // Test if it's an array:
+            arrayValidator({
+                target: target,
+                path: path,
+                results: tempResults
+            });
+
+            // Copy array test results:
+            for(r = 0; r < tempResults.length; ++r){
+                results.push(tempResults[r]);
+            }
+
+            // Is not an array, abort:
+            if(!resultEvaluator(tempResults)){
+                return;
+            }
+
+            var allOk = true;
+            // For each element in the array:
+            for(i = 0; i < target.length; i++){
+                // Tests each valid type:
+                for(j = 0; j < validTypes.length; ++j){
+                    var testStructure = new Structure(validTypes[j]);
+                    if(testStructure.test(target[i])){
+                        break;
+                    }
+                }
+
+                // No break at this point is an invalid content type:
+                allOk = false;
+                results.push({
+                    ok: false,
+                    message: path + ' does not have a valid content type ' +
+                    'at position ' + i + '. "' + target[i] + '" does not ' +
+                    'match (' + validTypes.join('|') + ')'
+                });
+            }
+        };
+        return customStructure;
+    };
 
     // Test the structure of the target against the stored schema:
     Structure.prototype.test = function(target, path){
@@ -250,7 +306,7 @@ Structure = (function(){
                          'object', 'string', 'xml'];
 
         // Basic type testing:
-        if(basicTypes.indexOf(this.schema) != -1){
+        if(basicTypes.indexOf(this.schema) !== -1){
 
             basicTypeValidator({
                 target: target,
@@ -306,7 +362,7 @@ Structure = (function(){
         // Tree:
         if(isNotAStructureObject(this.schema)){
             // Abort if target is undefined or null:
-            if(typeof target === "undefined" || target == null){
+            if(typeof target === "undefined" || target === null){
                 this.results.push({
                     ok: false,
                     message: path + " can't be " + target
@@ -331,11 +387,6 @@ Structure = (function(){
 
             }
         }
-            
-
-        // To do:
-        
-        // ...Array inner types.
 
 
         // Check if all tests passed:
