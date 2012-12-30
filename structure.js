@@ -99,7 +99,6 @@ Structure = (function(){
 
             // Explicit array requirement:
             if(expected === 'array'){
-
                 if(propertyValue instanceof Array){
                     this.results.push({
                         ok: true,
@@ -131,11 +130,20 @@ Structure = (function(){
                 }
             }
 
+            // Nested structure:
+            if(expected instanceof Structure){
+                // Recursive evaluation:
+                expected.test(propertyValue);
+                var nestedResults = expected.results;
+                // Append nested results to results of this Structure:
+                for(var i = 0; i < nestedResults.length; ++i){
+                    this.results.push(nestedResults[i]);
+                }
+            }
+
             // To do:
             
             // ...Array inner types.
-
-            // ...Nested structures.
 
         }
 
