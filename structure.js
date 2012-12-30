@@ -5,7 +5,7 @@ Structure = (function(){
         this.results = [];
 
         /* This is false to make tests fail when an array is found and
-           a object was expected, adding stricter semantics.
+           an object was expected, adding stricter semantics.
            Change this to true to respect javascript's 'typeof' values. */
         this.arraysAreObjects = false;
     };
@@ -98,7 +98,7 @@ Structure = (function(){
             }
 
             // Explicit array requirement:
-            if(expected == 'array'){
+            if(expected === 'array'){
 
                 if(propertyValue instanceof Array){
                     this.results.push({
@@ -110,6 +110,23 @@ Structure = (function(){
                         ok: false,
                         message: 'Type of ' + property + ' is ' + (typeof
                             propertyValue) + ', expecting an Array'
+                    });
+                }
+            }
+
+            // String regular expresion match:
+            if(expected instanceof RegExp){
+                if(expected.test(propertyValue)){
+                    this.results.push({
+                        ok: true,
+                        message: 'Property ' + property + ' matches ' +
+                            expected.toString()
+                    });
+                }else{
+                    this.results.push({
+                        ok: true,
+                        message: 'Property ' + property + " doesn't match " +
+                            expected.toString()
                     });
                 }
             }
