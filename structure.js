@@ -27,7 +27,16 @@ Structure = (function(){
         var path = options.path;
         var results = options.results;
 
-        // Type matching:
+        // Object is not defined:
+        if(typeof target === 'undefined'){
+            results.push({
+                ok: false,
+                message: 'Missing ' + path + ', expecting ' + expected
+            });
+            return;
+        }
+
+        // Type matches:
         if(typeof target === expected){
             
             // Special case, check for custom semantics for arrays:
@@ -57,20 +66,41 @@ Structure = (function(){
 
         // Type doesn't match:
         }else{
-            // Because property is not defined:
-            if(typeof target === 'undefined'){
-                results.push({
-                    ok: false,
-                    message: 'Missing ' + path + ', expecting ' + expected
-                });
-            // Or because property is defined incorrectly:
-            }else{
-                results.push({
-                    ok: false,
-                    message: 'Type of ' + path + ' is ' + (typeof target) +
-                        ', expecting ' + expected
-                });
-            }
+            results.push({
+                ok: false,
+                message: 'Type of ' + path + ' is ' + (typeof target) +
+                    ', expecting ' + expected
+            });
+        }
+    };
+
+    // Validates when target is an array:
+    var arrayValidator = function(options){
+        var target = options.target;
+        var path = options.path;
+        var results = options.results;
+
+        // Object is not defined:
+        if(typeof target === 'undefined'){
+            results.push({
+                ok: false,
+                message: 'Missing ' + path + ', expecting an Array'
+            });
+            return;
+        }
+
+        // Check if Array is in the prototype chain:
+        if(propertyValue instanceof Array){
+            results.push({
+                ok: true,
+                message: path + ' is an Array'
+            });
+        }else{
+            results.push({
+                ok: false,
+                message: 'Type of ' + path + ' is ' + (typeof target) +
+                    ', expecting an Array'
+            });
         }
     };
 
@@ -114,18 +144,12 @@ Structure = (function(){
 
             // Explicit array requirement:
             if(expected === 'array'){
-                if(propertyValue instanceof Array){
-                    this.results.push({
-                        ok: true,
-                        message: 'Property ' + property + ' is an Array'
-                    });
-                }else{
-                    this.results.push({
-                        ok: false,
-                        message: 'Type of ' + property + ' is ' + (typeof
-                            propertyValue) + ', expecting an Array'
-                    });
-                }
+                
+                arrayValidator({
+                    target: propertyValue,
+                    path: path + '.' + property,
+                    results: this.results
+                });
             }
 
             // String regular expresion match:
