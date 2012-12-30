@@ -132,7 +132,8 @@ Structure = (function(){
                     ok: false,
                     message: 'Type of ' + path + ' is ' + (typeof target) +
                         ', expecting a string that matches ' +
-                        regExp.toString()
+                        regExp.toString() + ' (Structure.' +
+                        'regExpRequiresString is set to false)'
                 });
             }
             return;
@@ -152,6 +153,91 @@ Structure = (function(){
         }
     };
 
+    /* Custom structure used to represent special schema requirements like
+       specific array contents or specific numeric ranges. */
+    var CustomStructure = function(){
+        this.validator = function(){};
+    };
+
+    /* Tests if something is an object, but not an array or other valid
+       schema node. Useful to find trees in schemas. */
+    var isNotAStructureObject = function(obj){
+        var result = typeof obj === 'object';
+        result = result && !(obj instanceof Array);
+        result = result && !(obj instanceof RegExp);
+        result = result && !(obj instanceof Structure);
+        result = result && !(obj instanceof CustomStructure);
+        return result;
+    };
+
+    // Represents a numeric range in a schema:
+    Structure.NumericRange = function(lower, upper){
+        var customStructure = new CustomStructure();
+        var bounds = [lower, upper];
+
+        // Validator used to test a numric range:
+        customStructure.validator = function(options){
+            var target = options.target;
+            var path = options.path;
+            var results = options.results;
+
+            // Target is not defined:
+            if(typeof target === 'undefined'){
+                results.push({
+                    ok: false,
+                    message: 'Missing ' + path + ', expecting an Array'
+                });
+                return;
+            }
+
+            // Is not a number:
+            if(typeof target !== 'number'){
+                results.push({
+                    ok: false,
+                    message: 'Type of ' + path + ' is ' + (typeof target) +
+                    ', expecting number in range [' + bounds[0] + ', ' +
+                    bounds[1] + ']'
+                });
+                return;
+            }
+
+            // Lower bound is defined:
+            if(typeof bounds[0] === 'number'){
+                // Check it:
+                if(bounds[0] <= target){
+                    results.push({
+                        ok: true,
+                        message: path + ' is equal or larger than ' + bounds[0]
+                    });
+                }else{
+                    results.push({
+                        ok: false,
+                        message: path + " is not equal or larger than " +
+                        bounds[0] + " (it's " + target + ')'
+                    });
+                }
+            }
+
+            // Upper bound is defined:
+            if(typeof bounds[1] === 'number'){
+                // Check it:
+                if(target <= bounds[1]){
+                    results.push({
+                        ok: true,
+                        message: path + ' is equal or less than ' + bounds[1]
+                    });
+                }else{
+                    results.push({
+                        ok: false,
+                        message: path + " is not equal or less than " +
+                        bounds[1] + " (it's " + target + ')'
+                    });
+                }
+            }
+        };
+        return customStructure;
+    }
+
     // Test the structure of the target against the stored schema:
     Structure.prototype.test = function(target, path){
         path = path || 'object';
@@ -159,76 +245,98 @@ Structure = (function(){
         // Clear results:
         this.results = [];
 
-        // Abort if target is undefined or null:
-        if(typeof target === "undefined" || target == null){
-            this.results.push({
-                ok: false,
-                message: path + " can't be " + target
-            });
-            return resultEvaluator(this.results);
-        }
-
         // List of basic types:
         var basicTypes = ['boolean', 'function', 'number',
                          'object', 'string', 'xml'];
 
-        // Test object's structure:
-        for(var property in this.schema){
+        // Basic type testing:
+        if(basicTypes.indexOf(this.schema) != -1){
 
-            // Expected type and current value for this property:
-            var expected = this.schema[property];
-            var propertyValue = target[property];
-
-            // Basic type testing:
-            if(basicTypes.indexOf(expected) != -1){
-
-                basicTypeValidator({
-                    target: propertyValue,
-                    expected: expected,
-                    path: path + '.' + property,
-                    results: this.results,
-                    arraysAreObjects: this.arraysAreObjects
-                });
-            }
-
-            // Explicit array requirement:
-            if(expected === 'array'){
-                
-                arrayValidator({
-                    target: propertyValue,
-                    path: path + '.' + property,
-                    results: this.results
-                });
-            }
-
-            // String regular expresion match:
-            if(expected instanceof RegExp){
-
-                regExpValidator({
-                    target: propertyValue,
-                    regExp: expected,
-                    path: path + '.' + property,
-                    results: this.results,
-                    regExpRequiresString: this.regExpRequiresString
-                });
-            }
-
-            // Nested structure:
-            if(expected instanceof Structure){
-                // Recursive evaluation:
-                expected.test(propertyValue, path + '.' + property);
-                var nestedResults = expected.results;
-                // Append nested results to results of this Structure:
-                for(var i = 0; i < nestedResults.length; ++i){
-                    this.results.push(nestedResults[i]);
-                }
-            }
-
-            // To do:
-            
-            // ...Array inner types.
-
+            basicTypeValidator({
+                target: target,
+                expected: this.schema,
+                path: path,
+                results: this.results,
+                arraysAreObjects: this.arraysAreObjects
+            });
         }
+
+        // Explicit array requirement:
+        if(this.schema === 'array'){
+            
+            arrayValidator({
+                target: target,
+                path: path,
+                results: this.results
+            });
+        }
+
+        // String regular expresion match:
+        if(this.schema instanceof RegExp){
+
+            regExpValidator({
+                target: target,
+                regExp: this.schema,
+                path: path,
+                results: this.results,
+                regExpRequiresString: this.regExpRequiresString
+            });
+        }
+
+        // Custom structure:
+        if(this.schema instanceof CustomStructure){
+            this.schema.validator({
+                target: target,
+                path: path,
+                results: this.results
+            });
+        }
+
+        // Nested structure:
+        if(this.schema instanceof Structure){
+            // Recursive evaluation:
+            this.schema.test(target, path);
+            var nestedResults = this.schema.results;
+            // Append nested results to results of this Structure:
+            for(var i = 0; i < nestedResults.length; ++i){
+                this.results.push(nestedResults[i]);
+            }
+        }
+
+        // Tree:
+        if(isNotAStructureObject(this.schema)){
+            // Abort if target is undefined or null:
+            if(typeof target === "undefined" || target == null){
+                this.results.push({
+                    ok: false,
+                    message: path + " can't be " + target
+                });
+                return resultEvaluator(this.results);
+            }
+
+            // Explore and test each property:
+            for(var property in this.schema){
+                // Expected type and current value for this property:
+                var expected = this.schema[property];
+                var propertyValue = target[property];
+
+                // Build a nested schema to test the property:
+                var structure = new Structure(expected);
+                structure.test(propertyValue, path + '.' + property);
+
+                // Append nested results:
+                for(var i = 0; i < structure.results.length; ++i){
+                    this.results.push(structure.results[i]);
+                }
+
+            }
+        }
+            
+
+        // To do:
+        
+        // ...Array inner types.
+
 
         // Check if all tests passed:
         return resultEvaluator(this.results);
