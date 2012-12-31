@@ -321,6 +321,14 @@ Structure = (function(){
         var basicTypes = ['boolean', 'function', 'number',
                          'object', 'string', 'xml'];
 
+        // Constructors of basic types:
+        var basicConstructors = [Boolean, Function, Number, Object, String];
+
+        // Constructor-string substitution:
+        if(basicConstructors.indexOf(this.schema) !== -1){
+            this.schema = basicTypes[basicConstructors.indexOf(this.schema)];
+        }
+
         // Basic type testing:
         if(basicTypes.indexOf(this.schema) !== -1){
 
