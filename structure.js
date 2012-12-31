@@ -277,21 +277,33 @@ Structure = (function(){
             var allOk = true;
             // For each element in the array:
             for(i = 0; i < target.length; i++){
+                var matchFound = false;
                 // Tests each valid type:
                 for(j = 0; j < validTypes.length; ++j){
                     var testStructure = new Structure(validTypes[j]);
-                    if(testStructure.test(target[i])){
+                    if(testStructure.test(target[i], path + '[' + i + ']')){
+                        matchFound = true;
                         break;
                     }
                 }
 
-                // No break at this point is an invalid content type:
-                allOk = false;
+                // All tests for element i failed:
+                if(!matchFound){
+                    allOk = false;
+                    results.push({
+                        ok: false,
+                        message: path + " doesn't have a valid content type " +
+                        'at position ' + i + '. "' + target[i] + "\" doesn't" +
+                        ' match (' + validTypes.join('|') + ')'
+                    });
+                }
+            }
+
+            // No element failed:
+            if(allOk){
                 results.push({
-                    ok: false,
-                    message: path + ' does not have a valid content type ' +
-                    'at position ' + i + '. "' + target[i] + '" does not ' +
-                    'match (' + validTypes.join('|') + ')'
+                    ok: true,
+                    message: 'No invalid content found on ' + path
                 });
             }
         };
