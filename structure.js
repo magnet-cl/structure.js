@@ -238,6 +238,46 @@ Structure = (function(){
         return customStructure;
     };
 
+    // Represent a dictionary with specific schemas for keys and values:
+    Structure.Hash = function(keys, values){
+        var schemas = [keys, values];
+        var customStructure = new CustomStructure();
+        
+        // Validator ussed to test keys and values of a hash:
+        customStructure.validator = function(options){
+            var target = options.target;
+            var path = options.path;
+            var results = options.results;
+
+            // Object is not defined:
+            if(typeof target === 'undefined'){
+                results.push({
+                    ok: false,
+                    message: 'Missing ' + path + ', expecting object'
+                });
+                return;
+            }
+
+            var keyStructure = new Structure(schemas[0]);
+            var valueStructure = new Structure(schemas[1]);
+            var i = 0;
+            for(var property in target){
+                // Test keys:
+                keyStructure.test(property, path + '.' + property + ' (key)');
+                for(i = 0; i < keyStructure.results.length; ++i){
+                    results.push(keyStructure.results[i]);
+                }
+
+                // Test values:
+                valueStructure.test(target[property], path + '.' + property);
+                for(i = 0; i < valueStructure.results.length; ++i){
+                    results.push(valueStructure.results[i]);
+                }
+            }
+        };
+        return customStructure;
+    };
+
     // Represent an array with specific contents in a schema:
     Structure.ArrayOf = function(){
         var customStructure = new CustomStructure();
