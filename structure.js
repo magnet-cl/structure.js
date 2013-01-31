@@ -392,11 +392,14 @@ Structure = (function(){
         }
 
         // String regular expresion match:
-        if(this.schema instanceof RegExp){
-
+        if(this.schema instanceof RegExp || this.schema == "email"){
+          var regExpSchema = this.schema
+          if(this.schema == "email"){
+            regExpSchema = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          }
             regExpValidator({
                 target: target,
-                regExp: this.schema,
+                regExp: regExpSchema,
                 path: path,
                 results: this.results,
                 regExpRequiresString: this.regExpRequiresString
