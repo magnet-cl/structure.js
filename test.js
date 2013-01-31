@@ -15,8 +15,7 @@ var testStructure = new Structure({
   string2: String,
   array: "array",
   regExp1: /\w+/,
-  regExp2: new RegExp("\w"),
-  email: "email",
+  regExp2: new RegExp("\w")
 });
 
 var example = {
