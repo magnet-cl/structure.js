@@ -1,4 +1,4 @@
 structure.js
 ============
 
-Wooo's secret weekend project
+A simple, yet powerful tool to validate javascript objects
