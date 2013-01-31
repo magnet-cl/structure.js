@@ -458,3 +458,5 @@ Structure = (function(){
     };
     return Structure;
 })();
+
+module.exports = Structure;
