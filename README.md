@@ -2,6 +2,8 @@
 
 A simple, yet powerful tool to validate javascript objects
 
+Official Page: [http://magnet-cl.github.io/structure.js/](http://magnet-cl.github.io/structure.js/)
+
 #Why?
 
 A key component of every project is testing, and a common case is to test that an  object complies a given set of rules. For example, *"This user object contains an id, an email and a username"*. But this is not the only case, sometimes you also need to test if these fields are what you were expecting them to be. In the previous example, username should be a string of minimum 5 characters, the id should be an integer and the email should satisfy an email regular expression. 
