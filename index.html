@@ -1,60 +1,125 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Structure.js by magnet-cl</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
     <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
+    <title>Structure.js by magnet-cl</title>
   </head>
+
   <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/magnet-cl/structure.js">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/magnet-cl/structure.js/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/magnet-cl/structure.js/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
+    <div id="container">
+      <div class="inner">
 
-    <div class="wrapper">
-
-      <section>
-        <div id="title">
+        <header>
           <h1>Structure.js</h1>
-          <p>A simple, yet powerful tool to validate javascript objects</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/magnet-cl">magnet-cl</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
-        </div>
+          <h2>A powerful tool to validate javascript objects, using a simple and intuitive notation.</h2>
+        </header>
 
-        <h1>Structure.js</h1>
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/magnet-cl/structure.js/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/magnet-cl/structure.js/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/magnet-cl/structure.js" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
 
-<p>A simple, yet powerful tool to validate javascript objects</p>
+        <hr>
+
+        <section id="main_content">
+          <h1>Structure.js</h1>
+
+<p>A powerful tool to validate javascript objects, using a simple and intuitive notation.</p>
 
 <h1>Why?</h1>
 
-<p>A key component of every project is testing, and a common case is to test that an  object complies a given set of rules. For example, <em>"This user object contains an id, an email and a username"</em>. But this is not the only case, sometimes you also need to test if these fields are what you were expecting them to be. In the previous example, username should be a string of minimum 5 characters, the id should be an integer and the email should satisfy an email regular expression. </p>
+<p>A key component of every project is testing, and a common case is to test that an object complies a given set of rules. For example, <em>"This user object contains an id, an email and a username"</em>. But this is not the only case, sometimes you also need to test if these fields are what you were expecting them to be. In the previous example, username should be a string of minimum 5 characters, the id should be an integer and the email should satisfy an email regular expression.</p>
 
-<p>Another typical test case is when you are working on a team and interfaces are defined. The previous example shows such an example of such interface. </p>
+<p>Another typical test case is when you are working on a team and interfaces are defined. The previous example shows such an example of such interface.</p>
 
 <p>Thus, Structure-js comes to the rescue. You can easily define the structure of your expected objects and test if any object complies. A  list with the tests results is given to you, explaining what went wrong and which field caused the problem.</p>
 
-<h1>Examples:</h1>
-      </section>
+<h1>Examples</h1>
 
+<h2>Basic validations</h2>
+
+<p>A basic example is the validation of a simple user, first you need to define a schema for your objects:</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">s</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Structure</span><span class="p">({</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+    <span class="nx">first_name</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span>
+    <span class="nx">last_name</span><span class="o">:</span> <span class="nb">String</span>
+<span class="p">});</span>
+</pre></div>
+
+<p>Now, given the following objects:</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">user1</span> <span class="o">=</span> <span class="p">{</span><span class="nx">id</span><span class="o">:</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">first_name</span><span class="o">:</span> <span class="s2">"Good"</span><span class="p">,</span> <span class="nx">last_name</span><span class="o">:</span> <span class="s2">"Guy"</span><span class="p">};</span>
+<span class="kd">var</span> <span class="nx">user2</span> <span class="o">=</span> <span class="p">{</span><span class="nx">id</span><span class="o">:</span> <span class="s2">"2"</span><span class="p">,</span> <span class="nx">first_name</span><span class="o">:</span> <span class="s2">"Bad"</span><span class="p">,</span> <span class="nx">last_name</span><span class="o">:</span> <span class="s2">"Guy"</span><span class="p">};</span>
+</pre></div>
+
+<p>You can test if they match your expected pattern:</p>
+
+<div class="highlight"><pre><span class="nx">s</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">user1</span><span class="p">);</span> <span class="c1">// returns true</span>
+<span class="nx">s</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="nx">user2</span><span class="p">);</span> <span class="c1">// returns false</span>
+</pre></div>
+
+<p>Also you can check the test results:</p>
+
+<pre><code>&gt;&gt;&gt; s.results
+[ { ok: false,
+    message: 'Type of object.first_name is string, expecting number' },
+  { ok: true,
+    message: 'Type of object.first_name is string' },
+  { ok: true,
+    message: 'Type of object.last_name is string' }]
+</code></pre>
+
+<h2>Nested validations</h2>
+
+<p>You can go deeper declaring nested structures for your validations</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">s</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Structure</span><span class="p">({</span>
+    <span class="nx">id</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+    <span class="nx">name</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span>
+    <span class="nx">location</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">latitude</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span>
+        <span class="nx">longitude</span><span class="o">:</span> <span class="nb">Number</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+
+<p>Note that location is defined as a nested structure, you can nest as many levels as you want.</p>
+
+<h2>Non-basic types</h2>
+
+<p>You can use Structre.js to test against regular expressions or user defined prototypes</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">Animal</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">){</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span><span class="p">;</span>
+    <span class="cm">/*</span>
+<span class="cm">        ... Animal implementation ...</span>
+<span class="cm">     */</span>
+<span class="p">};</span>
+
+<span class="kd">var</span> <span class="nx">s</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Structure</span><span class="p">({</span>
+    <span class="nx">username</span><span class="o">:</span> <span class="sr">/^\w+$/</span><span class="p">,</span>
+    <span class="nx">pet</span><span class="o">:</span> <span class="nx">Animal</span>
+<span class="p">});</span>
+</pre></div>
+        </section>
+
+        <footer>
+          Structure.js is maintained by <a href="https://github.com/magnet-cl">magnet-cl</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
   </body>
 </html>
